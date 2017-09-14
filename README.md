@@ -1,12 +1,14 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![Hi, I am a guar!](https://i.imgur.com/lJaJWf9.jpg)
 
-# guar component framework
+# Guar component framework
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jackspaniel/guar?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
 [![build status][travis-image]][travis-url]
 [![Test coverage][coveralls-image]][coveralls-url]
+
+# WARNING: under extreme development - do not use (but feel free to explore and play around :)
 
 guar is a component-based, datasource-agnostic framework for serving web content. It extends the [nodulejs component framework](https://github.com/jackspaniel/nodulejs) - to include back-end data gathering, standardized slots for app-defined middleware and template management. 
 

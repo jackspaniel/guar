@@ -19,11 +19,11 @@ module.exports = function(app) {
 
     routeVerb: 'post', // default = get       
     
-    apiCalls: [{
+    apiCalls: { data1: {
       path: '/api/submitform',
       verb: 'post',
       bodyType: 'form', // default = 'json'
-    }],
+    }},
 
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
@@ -33,12 +33,12 @@ module.exports = function(app) {
       // in real life don't forget to sanitize query params!
       if (!_.isEmpty(req.body)) {
         // change form body type sent to API
-        if (req.body.doJson) this.apiCalls[0].bodyType = 'json';
+        if (req.body.doJson) this.apiCalls.data1.bodyType = 'json';
 
-        this.apiCalls[0].params = req.body; // JSON body
+        this.apiCalls.data1.params = req.body; // JSON body
       }
       else {
-        this.apiCalls[0].params = req.query; // url-encoded
+        this.apiCalls.data1.params = req.query; // url-encoded
       }
     },
 

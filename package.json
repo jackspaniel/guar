@@ -18,7 +18,8 @@
     "component-based framework"
   ],
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "mon": "nodemon --watch demo --watch middlewares --watch plugins --watch test --watch guar.js --watch demoServer.js demoServer.js"
   },
   "repository": {
     "type": "git",
@@ -48,6 +49,7 @@
     "jade": "^1.8.2",
     "mocha": "^2.2.5",
     "mocha-lcov-reporter": "0.0.1",
+    "nodemon": "^1.12.0",
     "supertest": "^1.0.1"
   }
 }

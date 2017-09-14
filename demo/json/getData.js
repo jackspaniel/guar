@@ -14,16 +14,16 @@ module.exports = function(app) {
     route : '/json/getData/:id',       
 
     // MAGIC ALERT: if the api path ends in a / the framework appends :id (req.params.id) from the route
-    apiCalls: [
-      {path: '/api/getdata/'},
-    ],
+    apiCalls: {
+      data1: {path: '/api/getdata/'},
+    },
 
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
 
       // business logic before API calls are made
 
-      this.apiCalls[0].params = {myParam: req.query.myParam}; // in real life don't forget to sanitize query params!
+      this.apiCalls.data1.params = {myParam: req.query.myParam}; // in real life don't forget to sanitize query params!
    },
     
     postProcessor: function(req, res) {

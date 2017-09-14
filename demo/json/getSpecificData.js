@@ -18,15 +18,15 @@ module.exports = function(app) {
     // routes registered first take precedence
     routeIndex: -1,
 
-    apiCalls: [{
+    apiCalls: { data1: {
       path: '/api/getdata/special/',
       params: {myParam:'specialsauce'}, // example of static api param set at app-init time
-    }],
+    }},
 
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
 
-      this.apiCalls[0].path +=  req.params[0]; // adding id to api path when route :id isn't present
+      this.apiCalls.data1.path +=  req.params[0]; // adding id to api path when route :id isn't present
     },
 
     postProcessor: function(req, res) {
