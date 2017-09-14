@@ -121,7 +121,7 @@ function demoPreApi(app) {
 
     // example of adding global api call at app-level
     if (req.nodule.contentType !== 'json' && !req.nodule.suppressNav)      
-      req.nodule.apiCalls.push({path:'/api/globalnav',  namespace:'globalNav'});
+      req.nodule.apiCalls.globalNav = {path:'/api/globalnav'};
     
     next();
   };

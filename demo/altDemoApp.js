@@ -41,7 +41,7 @@ var config =  {
 function demoPreApi(req, res, next) {
   console.log("demoPreApi called");
 
-  req.nodule.apiCalls[0].host = req.headers.host;
+  req.nodule.apiCalls.data1.host = req.headers.host;
 
   next();
 }

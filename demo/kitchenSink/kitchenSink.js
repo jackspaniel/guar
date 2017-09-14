@@ -26,26 +26,40 @@ module.exports = function(app) {
     // routes can be a string, RegExp or array of either (to match multiple routes)
     route: ['/kitchensink', '/bathroomtub/:id'],
 
-    apiCalls: [
-      {path: '/api/cms/home'}, // comes to postProcessor as res.guar.data1
-      {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
-      {path: '/api/getdata/somecall/', useStub: true},
-      {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
-    ],
+    // apiCalls: [
+    //   {path: '/api/cms/home'}, // comes to postProcessor as res.guar.data1
+    //   {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
+    //   {path: '/api/getdata/somecall/', useStub: true},
+    //   {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
+    // ],
+  
+    apiCalls: {
+      cms: {path: '/api/cms/home'}, 
+      kitchensink: {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
+      somecall: {path: '/api/getdata/somecall/', useStub: true},
+      someothercall: {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
+    },
+  
+    // apiCalls: [
+    //   {cms: {cms1: {path: '/api/cms/home'}, cms2: {path: '/api/cms/home2'}}}, // comes to postProcessor as res.guar.data1
+    //   {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
+    //   {path: '/api/getdata/somecall/', useStub: true},
+    //   {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
+    // ],
   
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
 
-      this.apiCalls[1].customHeaders = [{name: 'x-test', value: 'success'}]; 
+      this.apiCalls.kitchensink.customHeaders = [{name: 'x-test', value: 'success'}]; 
 
       // test "magic" adding :id when api path ends with /
       // also testing adding apiCall at request-time
-      if (req.path.indexOf('bathroomtub') > -1) this.apiCalls.push({path: '/api/getdata/'}); 
+      if (req.path.indexOf('bathroomtub') > -1) this.apiCalls.bathroomtub = {path: '/api/getdata/'}; 
 
       // adding query params two different ways (in real life don't forget to sanitize query params!)
       if (req.query.myParam) {
-        this.apiCalls[0].params = {myParam: req.query.myParam}; // creating API params object because it hasn't been defined yet
-        this.apiCalls[1].params.myParam = req.query.myParam; // adding to existing API params
+        this.apiCalls.cms.params = {myParam: req.query.myParam}; // creating API params object because it hasn't been defined yet
+        this.apiCalls.kitchensink.params.myParam = req.query.myParam; // adding to existing API params
       }
 
       // setting alternamte template name
@@ -55,10 +69,10 @@ module.exports = function(app) {
       if (req.query.altTemplatePath) this.templateName = './demo/homePage/altTemplatePath.jade';
 
       // setting alternamte api host
-      if (req.query.altApiHost) this.apiCalls[1].host = 'localhost:'+req.headers.host.split(':')[1]; 
+      if (req.query.altApiHost) this.apiCalls.kitchensink.host = 'localhost:'+req.headers.host.split(':')[1]; 
       
       // setting alternatte API timeout
-      if (req.query.apiTimeout) this.apiCalls[1].timeout = 1; 
+      if (req.query.apiTimeout) this.apiCalls.kitchensink.timeout = 1; 
       
       // changing content type to JSON at request-time
       if (req.query.forceJson) this.contentType = 'json'; 
@@ -73,11 +87,11 @@ module.exports = function(app) {
       }
 
       res.guar.renderData = {
-        data1: res.guar.data1,
-        data2: res.guar.data2,
-        data3: res.guar.data3,
-        data4: res.guar.data4,
-        data5: res.guar.data5,
+        data1: res.guar.cms,
+        data2: res.guar.kitchensink,
+        data3: res.guar.somecall,
+        data4: res.guar.someothercall,
+        data5: res.guar.bathroomtub,
       };
     }
   };

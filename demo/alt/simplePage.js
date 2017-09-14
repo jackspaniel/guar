@@ -7,7 +7,7 @@ module.exports = function(app) {
     // routes can be a string, RegExp or array of either (to match multiple routes)
     route: ['/alt'],
 
-    apiCalls: [{path:'/api/cms/home'}]
+    apiCalls: {data1: {path:'/api/cms/home'}}
   };
 };
 
