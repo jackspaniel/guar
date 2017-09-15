@@ -25,33 +25,19 @@ module.exports = function(app) {
   return {
     // routes can be a string, RegExp or array of either (to match multiple routes)
     route: ['/kitchensink', '/bathroomtub/:id'],
-
-    // apiCalls: [
-    //   {path: '/api/cms/home'}, // comes to postProcessor as res.guar.data1
-    //   {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
-    //   {path: '/api/getdata/somecall/', useStub: true},
-    //   {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
-    // ],
   
-    // use object for parallel calls
+    // use JS object for parallel calls
     apiCalls: {
       cms: {path: '/api/cms/home'}, 
       kitchensink: {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
       somecall: {path: '/api/getdata/somecall/', useStub: true},
       someothercall: {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
     },
-  
-    // // use array for sequential calls
-    // apiCalls: [
-    //   {cms: {path: '/api/cms/home'}},
-    //   {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
-    //   {path: '/api/getdata/somecall/', useStub: true},
-    //   {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
-    // ],
-  
+    
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
 
+      // demonstrate adding apiCall custom headers at run time
       this.apiCalls.kitchensink.customHeaders = [{name: 'x-test', value: 'success'}]; 
 
       // test "magic" adding :id when api path ends with /
