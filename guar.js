@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var nodulejs = require('nodulejs');
+const restMiddleware = require('./middlewares/rest-api');
 
 module.exports = function(app, config) {
 
@@ -11,12 +12,7 @@ module.exports = function(app, config) {
   var debug = guarConfig.customDebug('guar->index');
   debug('initializing');
 
-  guarConfig.pluginMiddlewares = [];
-  guarConfig.dataSourcePlugins.forEach(function(pluginName) {
-    usePlugin(pluginName);
-  });
-
-  var getDataMiddleware = config.middlewares.getData || require('./middlewares/getDataParallel')(guarConfig);
+  var getDataMiddleware = config.middlewares.getData || restMiddleware(app, guarConfig);
 
   // array of middleware functions to be executed on each request
   // splicing app-defined middleware in-between guar system middlware
@@ -28,7 +24,7 @@ module.exports = function(app, config) {
 
     guarConfig.middlewares.preData, // app-defined
     
-    getDataMiddleware, // can be app-defined or use guar parallel plugin caller by default
+    getDataMiddleware, // can be app-defined or use guar rest api middleware by default
     
     guarConfig.middlewares.postData, // app-defined
 
@@ -41,16 +37,6 @@ module.exports = function(app, config) {
 
   // nodulejs finds and loads nodules based on config below, registers routes with express based on nodule route and other properties
   nodulejs(app, guarConfig); 
-
-  return {
-    usePlugin: usePlugin
-  };
-
-  function usePlugin(pluginName) {
-    var plugin = require('./plugins/' + pluginName)(app, guarConfig);
-    guarConfig = plugin.mergedConfig;
-    guarConfig.pluginMiddlewares.push(plugin.middleware);
-  }
 
   // default debug function
   function customDebug(identifier) {   
@@ -65,11 +51,10 @@ function passThrough(req, res, next) {
   next();
 }
 
-var defaultConfig =  {
+const defaultConfig =  {
   
-  // override in app config to use different data sources, parallel API by default
-  dataSourcePlugins: ['parallel-api'], 
-
+  debugToConsole: true,
+  
   ///////////////////////////////////////////////////////////////// 
   /// OPTIONAL APP-DEFINED EXPRESS MIDDLEWARE FUNCTIONS         ///
   /////////////////////////////////////////////////////////////////  
@@ -80,7 +65,7 @@ var defaultConfig =  {
     // called after nodule.preProcessor, before API call(s)
     preData: passThrough,
  
-    // calls all dataSourcePlugins middleware in parallel, can be overridden for custom behavior
+    // outermost middleware that gathers back end data
     getData: null, // (defined above)
  
     // called after API call(s), before nodule.postProcessor
@@ -111,6 +96,9 @@ var defaultConfig =  {
     // 'html', 'json' only current values - use this to force any nodule to behave like a json or html call regardless of naming conventions or directory conventions
     contentType: null,
 
+    // used by REST middlware
+    apiCalls: {},
+
     // use to manipulate query params or other business logic before api call(s)
     preProcessor: function(req, res) { },
 
@@ -122,5 +110,51 @@ var defaultConfig =  {
 
     // set this.error to an Error() instance to call next(error) inside the preProcessor or postProcessor
     error: null,
+
+  },
+
+  // REST defaults
+
+  // (OPTIONAL) synchronous function called at the start of every api call
+  apiCallBefore: function(callArgs, req, res) { },
+
+  // (OPTIONAL) asynchronous function called after every api call
+  // NOTE: must execute next() if defined
+  apiCallback: function(callArgs, req, res, next) { next(callArgs.apiError); },
+  
+  // there can be multiple api calls per nodule, all called in sequential
+  apiDefaults: {
+    // path to server, can be used to over-ride default 
+    host: null, 
+
+    // MAGIC ALERT: if api path ends with a slash(/), the framework automatically tries to append req.params.id from the express :id wildcard 
+    //              as this is a very common REST paradigm
+    path: null,
+
+    // params to send to API server
+    // if verb is 'post', this can be a deep json object (bodyType=json) or a shallow object of name value pairs (bodyType=form)
+    params: {},
+
+    // valid values: get, post, put, del (express uses 'del' since delete is a reserved word)
+    verb: 'get',
+
+    // valid values: json, form
+    bodyType: 'json',
+
+    // custom headers to sent to API
+    customHeaders: [],
+
+    // function to be called after API call (useful for sequential)
+    handler: null,
+
+    // (numeric) - max API return time in ms
+    timeout: null,
+
+    // set true to force api to use stub (IE - if API isn't ready yet)
+    useStub: false,
+
+    // can contain path or just name if in same folder
+    // MAGIC ALERT: if not specified, app looks for [nodule name].stub.json in nodule folder
+    stubPath: null,
   },
 };

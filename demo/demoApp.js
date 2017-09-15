@@ -42,7 +42,7 @@ var config =  {
   ],
 
   // set to true or or use customDebug: function(identifier) { return function(msg){... your debug function here ...} }
-  debugToConsole: false, 
+  debugToConsole: true, 
 
 
   /////////////////////////////////////////////////////////////  

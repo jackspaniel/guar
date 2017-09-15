@@ -7,7 +7,7 @@ var fs = require('fs');
 var _ = require('lodash');
 
 module.exports = function(app, config) {
-  var debug = config.customDebug('guar->parallel-api->api');
+  var debug = config.customDebug('guar->middlewares->rest-api');
 
   return { 
     getData: getData,
@@ -58,6 +58,10 @@ module.exports = function(app, config) {
       callArgs.apiError = err;
       callArgs.apiResponse = response;
 
+      // custom handler for individual API calls (useful for sequential)
+      if (callArgs.handler && req.nodule[callArgs.handler]) 
+        req.nodule[callArgs.handler](res.guar[callArgs.namespace], req, res);
+
       // IMPORTANT: this function must call next() and therefore must always be last in this block
       config.apiCallback(callArgs, req, res, next);
     });
@@ -72,7 +76,7 @@ module.exports = function(app, config) {
                ? path.join(process.cwd(), stubName) 
                : path.join(req.nodule.path, stubName+'.stub.json');
     
-    debug('loooking for stub - ' + stub);
+               debug('loooking for stub - ' + stub);
 
     var data = {};
     try {

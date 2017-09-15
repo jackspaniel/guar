@@ -57,7 +57,7 @@ module.exports = function(app) {
         .get('/kitchensink')
         .query({myParam: 'test1'})
         .end(function(err, res) {
-          expect(res.text).toContain('home page CMS API success!","myParam":"test1', 'res.text='+res.text);
+          expect(res.text).toContain('"myParam":"test1', 'res.text='+res.text);
           expect(res.text).toContain('get data success! id=kitchensink","queryPrams":{"staticParam":"test1","myParam":"test1', 'res.text='+res.text);
           done();
         });

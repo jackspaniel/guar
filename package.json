@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "test": "make test",
-    "mon": "nodemon --watch demo --watch middlewares --watch plugins --watch test --watch guar.js --watch demoServer.js demoServer.js"
+    "mon": "nodemon --watch demo --watch middlewares --watch test --watch guar.js --watch demoServer.js demoServer.js"
   },
   "repository": {
     "type": "git",
