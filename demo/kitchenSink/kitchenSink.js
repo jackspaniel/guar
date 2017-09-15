@@ -26,7 +26,8 @@ module.exports = function(app) {
     // routes can be a string, RegExp or array of either (to match multiple routes)
     route: ['/kitchensink', '/bathroomtub/:id'],
   
-    // use JS object for parallel calls
+    // use JS object for parallel calls, array for sequential
+    // these are set at bootup time
     apiCalls: {
       cms: {path: '/api/cms/home'}, 
       kitchensink: {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
@@ -34,6 +35,7 @@ module.exports = function(app) {
       someothercall: {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
     },
     
+    // called before any API calls are made
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
 
@@ -66,6 +68,7 @@ module.exports = function(app) {
       if (req.query.forceJson) this.contentType = 'json'; 
     },
     
+    // called after all API calls return
     postProcessor: function(req, res) {
       this.debug('postProcessor called');
 
@@ -74,6 +77,7 @@ module.exports = function(app) {
         return;
       }
 
+      // object sent back to browser
       res.guar.renderData = {
         data1: res.guar.cms,
         data2: res.guar.kitchensink,
