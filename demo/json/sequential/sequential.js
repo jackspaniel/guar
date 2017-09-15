@@ -5,19 +5,22 @@ module.exports = function(app) {
     // routes can be a string, RegExp or array of either (to match multiple routes)
     route: ['/json/seq'],
   
-    // // use array for sequential calls
+    // use array for sequential calls, object for parallel
+    // these are set at bootup time
     apiCalls: [
       {path: '/api/cms/home', handler: 'cmsHandler'},
       {path: '/api/getdata/kitchensink', handler: 'kitchenSinkHandler'},
     ],
   
+    // called before any API calls are made
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
 
+      // demonstrate adding custom headers to one call at run time
       this.apiCalls[1].customHeaders = [{name: 'x-test', value: 'success'}]; 
     },
 
-    // demonstrate handler after sequential call
+    // handler called after 1st sequential call
     cmsHandler: function(apiResponse, req, res) {
       this.debug('cmsHandler!!!');
 
@@ -28,6 +31,7 @@ module.exports = function(app) {
       this.apiCalls[1].params = {userId: apiResponse.userId};
     },
     
+    // handler called after 2nd sequential call
     kitchenSinkHandler: function(apiResponse, req, res) {
       this.debug('kitchenSinkHandler!!!');
 
@@ -37,6 +41,7 @@ module.exports = function(app) {
       this.apiCalls.push({path: '/api/getdata/somecall', params: {userId2: 'zzzzz'}});
     },
     
+    // called after all API calls return
     postProcessor: function(req, res) {
       this.debug('postProcessor called');
 
