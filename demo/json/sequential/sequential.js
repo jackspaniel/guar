@@ -17,11 +17,14 @@ module.exports = function(app) {
       this.apiCalls[1].customHeaders = [{name: 'x-test', value: 'success'}]; 
     },
 
+    // demonstrate handler after sequential call
     cmsHandler: function(apiResponse, req, res) {
       this.debug('cmsHandler!!!');
 
+      // demonstrate manipulating call response data
       apiResponse.testSequential = 'xxx';
 
+      // demonstrate input to second call from output of first call
       this.apiCalls[1].params = {userId: apiResponse.userId};
     },
     
@@ -30,17 +33,14 @@ module.exports = function(app) {
 
       apiResponse.testSequential2 = 'yyyy';
 
+      // demonstrate pushing another sequential call onto the stack at run time
       this.apiCalls.push({path: '/api/getdata/somecall', params: {userId2: 'zzzzz'}});
     },
     
     postProcessor: function(req, res) {
       this.debug('postProcessor called');
 
-      if (req.query.testError) {
-        this.error = 'Kitchen Sink Test Error!';
-        return;
-      }
-
+      // return data from all calls - this will change to res.locals.data1, etc.
       res.guar.renderData = {
         data1: res.guar.data1,
         data2: res.guar.data2,
