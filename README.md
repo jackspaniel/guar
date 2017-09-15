@@ -8,11 +8,11 @@
 [![build status][travis-image]][travis-url]
 [![Test coverage][coveralls-image]][coveralls-url]
 
-# WARNING: under extreme development - do not use (but feel free to explore and play around :)
+# WARNING: under extreme development - do not use - but feel free to explore and play around :)
 
 guar is a component-based, datasource-agnostic framework for serving web content. It extends the [nodulejs component framework](https://github.com/jackspaniel/nodulejs) - to include back-end data gathering, standardized slots for app-defined middleware and template management. 
 
-A really simple guar component (using the parallel-api plugin) looks like this:
+A really simple guar component (using the rest-api middleware) looks like this:
 ```js
 module.exports = function(app) {
   return {
@@ -38,10 +38,7 @@ module.exports = function(app) {
 ```
 Just save this as a .js file in the default nodules directory, or more likely - in a directory you specify. The framework will do the rest when node boots. 
 
-Back-end data-gathering is achieved through plugins. Currently the only fully-fleshed out plugin makes 0-n REST API calls in parallel - as that was our need. I have made some starts on mysql and solr plugins, but would like a real - world implementation to battle-test them on. So by all means if you stumble across this repository, shoot me an email and I will work with you to get it up and running for your needs. 
-
-*FYI - we're considering an alternate approach to non-REST data sources. See To Do section below.*
-
+Back-end data-gathering is achieved through middleware. Currently the only fully-fleshed out middleware makes REST API calls in parallel, sequence, or a mixture of the two. 
 
 ## Installation
 ```
@@ -87,7 +84,7 @@ This diagram might make the concept a little more clear:
 Guar config is broken into 3 sections:
 
 1. Nodule-specific properties
-2. Data plugin-specific properties
+2. Data middlware-specific properties (TODO - break those out to middleware)
 3. App-defined middleware functions and global settings
 
 *Note: You may occasionally see "MAGIC ALERT" below. This is for the handful of times where the framework does some convenience method that isn't immediately obvious, but comes up so much we felt the code saving was worth the loss in conceptual clarity.*
@@ -109,13 +106,13 @@ Guar also adds the following optional nodule properties:
 4. __preProcessor:__ use this function to manipulate query params or other business logic before back-end data-gathering
 5. __postProcessor__: use this function to process data returned from back-end data-gathering, before calling the template or sending the renderData back to the client as JSON
 6. __error:__ set to a string or an Error() instance to get the framework to call next(error)
-7. __apiCalls:__ array of API calls to made in parallel for this nodule, see the section below for details what constitutes an API call. *this property is added to nodule defaults by the parallel-api plugin*
+7. __apiCalls:__ array of API calls to made in parallel for this nodule, see the section below for details what constitutes an API call. *this property is added to nodule defaults by the rest-api middleware*
 
 <br>NOTE: global or semi-global calls like getProfile, getGlobalNav, etc. can be added to this array in the preData middleware.
 
-### API-specific properties added by the parallel-api plugin (plugins/parallel-api/index.js - config.apiDefaults)
+### API-specific properties added by the rest-api middlware (middlewares/rest-api/index.js - config.apiDefaults)
 
-The guar parallel-api plugin defines the following properties for each API call. It is important to understand that these exist in a one-to-many relationship with nodules. 
+The guar rest-api middleware defines the following properties for each API call. It is important to understand that these exist in a one-to-many relationship with nodules. 
 
 1. __path:__ path to API (not including server). 
 <br>MAGIC ALERT: if the API path ends with a slash(/), the framework automatically tries to append req.params.id from the express :id wildcard. For us at least this is a very common REST paradigm.
@@ -129,7 +126,7 @@ The guar parallel-api plugin defines the following properties for each API call.
 9. __stubPath:__ can contain path or just name if in same folder
 <br>MAGIC ALERT: if not specified, app looks for [nodule name].stub.json in nodule folder
 
-The parallel-api plugin also allows 2 optional app-defined functions, which are executed before and after every API call. It's important to understand that there can be several API calls per express request. So these functions are not in the standard middleware chain, although the api callback does make use of the middleware paradigm.
+The rest-api middleware also allows 2 optional app-defined functions, which are executed before and after every API call. It's important to understand that there can be several API calls per express request. So these functions are not in the standard middleware chain, although the api callback does make use of the middleware paradigm.
 
 1. __apiCallBefore:__ a synchronous function executed before of every api call. Do any common API pre-processing here. 
 2. __apiCallback:__ an asynchronous function executed after every api call, must execute next() if defined. Do error handling and other common post-API processing here. To do: consider moving error handling to framework and making this call synchronous.
@@ -140,7 +137,7 @@ An app can create and use 4 optional express middleware functions, which splice 
 
 1. __start:__ called at start of middleware, before nodule.preProcessor
 2. __preData:__ called after nodule.preProcessor, before data-gathering
-3. __getData:__ middleware which gets all data (Note: if specified in the app config, this function will bypass all plugin behavior)
+3. __getData:__ middleware which gets all data (Note: if specified in the app config, this function will bypass all middleware behavior)
 4. __postData:__ called after data gathering, before nodule.postProcessor
 5. __finish:__ called after nodule.postProcessor, before res.send() or res.render()
  
@@ -163,12 +160,10 @@ $ make test
 $ node demoServer
 ```
 ## To Do
-1. Consider using apiSim approach for any non REST data gathering. IE - node wraps any request to say Mongo, in just another nodule whose route is API call. So node is using itself as the API server and the nodule is going out to mongo or whatever async data source desired. This would be huge for code clarity, as the guar app would never have to worry about connecting to anything other than a REST API. Also this would make it trivially simple to split the data gathtering client and web client onto different servers - as the api server url would just be a config property.  Big question - is there a lot of performance overheard to node making an REST http call to itself? Is the perf hit worth it for code clarity and flexiblity?
-2. Reconsider stub behavior for parallel-api. Should all stubs move to apiSim behavior? What about brand new nodules where nothing is known about the API yet?
+1. Reconsider stub behavior for rest-api. Should all stubs move to apiSim behavior? What about brand new nodules where nothing is known about the API yet?
 
 ## Features for future consideration
-+ __Flesh out more plugins.__ Currently only the paralle-api plugin is fully operational. I need real-world sites to test this out on. (Free consulting!)
-+ __API error handling for parallel-api plugin.__ It seems that there can be a huge variation in error behavior, and even in what constitutes an API error (status code-based?), from web-app to web-app. So for now I've punted on advanced API error handling, and let the app deal with it in the API callback. But if something like a standard is more or less agreed-upon, I will be happy to add flexible error handling.
++ __API error handling for rest-api middlware.__ It seems that there can be a huge variation in error behavior, and even in what constitutes an API error (status code-based?), from web-app to web-app. So for now I've punted on advanced API error handling, and let the app deal with it in the API callback. But if something like a standard is more or less agreed-upon, I will be happy to add flexible error handling.
 
 ## Examples:
 

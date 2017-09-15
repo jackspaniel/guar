@@ -33,6 +33,7 @@ module.exports = function(app) {
     //   {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
     // ],
   
+    // use object for parallel calls
     apiCalls: {
       cms: {path: '/api/cms/home'}, 
       kitchensink: {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
@@ -40,8 +41,9 @@ module.exports = function(app) {
       someothercall: {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 
     },
   
+    // // use array for sequential calls
     // apiCalls: [
-    //   {cms: {cms1: {path: '/api/cms/home'}, cms2: {path: '/api/cms/home2'}}}, // comes to postProcessor as res.guar.data1
+    //   {cms: {path: '/api/cms/home'}},
     //   {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}},
     //   {path: '/api/getdata/somecall/', useStub: true},
     //   {path: '/api/getdata/someothercall/', useStub: true, stubPath: 'altKitchenSink'} 

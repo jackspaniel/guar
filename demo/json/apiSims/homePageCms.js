@@ -7,7 +7,7 @@ module.exports = function(app) {
     middlewares: [
       function(req, res, next) {
         req.nodule.debug('home page API called');
-        res.send({msg: 'home page CMS API success!', myParam:req.query.myParam});
+        res.send({msg: 'home page CMS API success!', userId: '123456', myParam:req.query.myParam});
       }
     ]     
   };
