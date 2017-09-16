@@ -38,7 +38,7 @@ module.exports = function(app) {
 };
 ```
 
-A  more complicated guar component, which makes three **sequential** API calls, some decided at run-time, using the rest-api middleware, looks like this:
+A  more complicated guar component, which makes three **sequential** API calls, some decided at run-time, using the rest-api middleware, looks like this (see **MORE EXAMPLES** at the bottom for handling a mix of nested sequential and parallel calls):
 ```js
 // FEATURES DEMONSTRATED:
 
