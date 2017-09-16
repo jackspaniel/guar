@@ -37,11 +37,11 @@ module.exports = function(app) {
       this.debug('postProcessor called');
 
       // object sent back to browser
-      res.guar.renderData = {
-        data1: res.guar.cms,
-        data2: res.guar.kitchensink,
-        data3: res.guar.somecall,
-        data4: res.guar.someothercall,
+      res.locals.responseData = {
+        data1: res.locals.cms,
+        data2: res.locals.kitchensink,
+        data3: res.locals.somecall,
+        data4: res.locals.someothercall,
       };
     }
   };

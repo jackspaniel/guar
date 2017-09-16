@@ -1,4 +1,10 @@
-// sequential with nested parallel calls example
+// FEATURES DEMONSTRATED:
+
+// sequential with nested parallel calls 
+// custom handler defined as sibling of parallelCalls array
+// manipulating data on both nested parallel calls when done, but before second call in the sequence is executed
+// using the output of the first nested sequential call as input for the second
+// adding another sequential call at run time (could be conditional based on previous results)
 
 module.exports = function(app) {
   return {
@@ -52,12 +58,12 @@ module.exports = function(app) {
       this.debug('postProcessor called');
 
       // return data from all calls - this will change to res.locals.data1, etc.
-      res.guar.renderData = {
-        cms1: res.guar.cms1,
-        cms2: res.guar.cms2,
-        data1: res.guar.data1,
-        data2: res.guar.data2,
-        data3: res.guar.data3,
+      res.locals.responseData = {
+        cms1: res.locals.cms1,
+        cms2: res.locals.cms2,
+        data1: res.locals.data1,
+        data2: res.locals.data2,
+        data3: res.locals.data3,
       };
     }
   };

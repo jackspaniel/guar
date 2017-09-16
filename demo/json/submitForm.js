@@ -6,9 +6,9 @@
 // setting api body request type to 'form' ('form'=url-encoded, 'json'=json body)
 // adding API params at request time
 // pre and post API business logic
-// creting res.guar.renderData object which goes to template as base object
+// creting res.locals.responseData object which is sent to client as JSON
 
-// for more demonstration of guar features - see kitchenSink.js, getSpecificData.js, getData.js, 404.js, homePage.js
+// for more demonstration of guar features - see getSpecificData.js, getData.js, 404.js
 
 var _ = require('lodash');
 
@@ -47,8 +47,8 @@ module.exports = function(app) {
 
       // process API results here before sending data to jade/client
       
-      res.guar.renderData = {
-        response: res.guar.data1
+      res.locals.responseData = {
+        response: res.locals.data1
       };
     }
   };

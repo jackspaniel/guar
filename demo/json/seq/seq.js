@@ -1,4 +1,11 @@
-// sequential calls example
+// FEATURES DEMONSTRATED:
+
+// sequential calls
+// optional custom handlers after each call
+// adding custom headers to one API call at run time
+// manipulating response data from first call
+// using output from first call as input to the next call
+// add 3rd sequential call at run time in handler for second call - could be conditional
 
 module.exports = function(app) {
   return {
@@ -46,10 +53,10 @@ module.exports = function(app) {
       this.debug('postProcessor called');
 
       // return data from all calls - this will change to res.locals.data1, etc.
-      res.guar.renderData = {
-        data1: res.guar.data1,
-        data2: res.guar.data2,
-        data3: res.guar.data3,
+      res.locals.responseData = {
+        data1: res.locals.data1,
+        data2: res.locals.data2,
+        data3: res.locals.data3,
       };
     }
   };

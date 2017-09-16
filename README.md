@@ -10,14 +10,14 @@
 
 # WARNING: under extreme development - do not use - but feel free to explore and play around :)
 
-guar is a component-based, datasource-agnostic framework for serving web content. It extends the [nodulejs component framework](https://github.com/jackspaniel/nodulejs) - to include back-end data gathering, standardized slots for app-defined middleware and template management. 
+guar is a component-based, datasource-agnostic framework for serving web content. It extends the [nodulejs component framework](https://github.com/jackspaniel/nodulejs) - to include REST API data gathering in sequence, parallel, or a nested mix. It also offers standardized slots for app-defined middleware to add global or semi-global business logic, such as logging, metrics, etc., at any step in the application flow. 
 
-A really simple guar component. which makes two parallel API calls using the rest-api middleware, looks like this:
+A really simple guar component. which makes two **parallel** API calls using the rest-api middleware, looks like this:
 ```js
 module.exports = function(app) {
   return {
   
-    route: '/home', 
+    route: '/json/par', 
     
     apiCalls: {
       {cms: {path: '/api/cms/home'}},
@@ -26,17 +26,87 @@ module.exports = function(app) {
     
     preProcessor: function(req, res) {
       // pre-API(s) business logic goes here
+      // do things like change api calls or call properties based on request params
     },
     
     postProcessor: function(req, res) {
       // post-API(s) business logic goes here
+      // do things like manipulate data and strip off unwanted properties
+      // results are automatically sent back to the browser if res.locals.responseData is not specified
     }
   };
 };
 ```
-Just save this as a .js file in the default nodules directory, or more likely - in a directory you specify. The framework will do the rest when node boots. 
 
-Back-end data-gathering is achieved through middleware. Currently the only fully-fleshed out middleware makes REST API calls in parallel, sequence, or a mixture of the two. 
+A  more complicated guar component, which makes three **sequential** API calls, some decided at run-time, using the rest-api middleware, looks like this:
+```js
+// FEATURES DEMONSTRATED:
+
+// sequential calls
+// optional custom handlers after each call
+// adding custom headers to one API call at run time
+// manipulating response data from first call
+// using output from first call as input to the next call
+// add 3rd sequential call at run time in handler for second call - could be conditional
+
+module.exports = function(app) {
+  return {
+    // routes can be a string, RegExp or array of either (to match multiple routes)
+    route: ['/json/seq'],
+  
+    // use array for sequential calls, object for parallel
+    // these are set at bootup time
+    apiCalls: [
+      {path: '/api/cms/home', handler: 'cmsHandler'},
+      {path: '/api/getdata/kitchensink', handler: 'kitchenSinkHandler'},
+    ],
+  
+    // called before any API calls are made
+    preProcessor: function(req, res) {
+      this.debug('preProcessor called');
+
+      // demonstrate adding custom headers to one call at run time
+      this.apiCalls[1].customHeaders = [{name: 'x-test', value: 'success'}]; 
+    },
+
+    // handler called after 1st sequential call
+    cmsHandler: function(apiResponse, req, res) {
+      this.debug('cmsHandler!!!');
+
+      // demonstrate manipulating call response data
+      apiResponse.testSequential = 'xxx';
+
+      // demonstrate input to second call from output of first call
+      this.apiCalls[1].params = {userId: apiResponse.userId};
+    },
+    
+    // handler called after 2nd sequential call
+    kitchenSinkHandler: function(apiResponse, req, res) {
+      this.debug('kitchenSinkHandler!!!');
+
+      apiResponse.testSequential2 = 'yyyy';
+
+      // demonstrate pushing another sequential call onto the stack at run time
+      this.apiCalls.push({path: '/api/getdata/somecall', params: {userId2: 'zzzzz'}});
+    },
+    
+    // called after all API calls return
+    postProcessor: function(req, res) {
+      this.debug('postProcessor called');
+
+      // return data from all calls - this will change to res.locals.data1, etc.
+      res.locals.responseData = {
+        data1: res.locals.data1,
+        data2: res.locals.data2,
+        data3: res.locals.data3,
+      };
+    }
+  };
+};
+```
+To activate, just save something like this as a .js file in the default nodules directory, or more likely - in a directory you specify. The framework will do the rest when node boots. 
+
+Back-end data-gathering is achieved through middleware. Currently the REST API middleware makes calls in parallel, sequence, or a nested mixture of the two. 
 
 ## Installation
 ```
@@ -58,7 +128,7 @@ If so then some of the terms that follow may be unfamilar. The good news is that
 ### What is a guar nodule? 
 A *__nodule__* is a self-discovering, self-registering web component tied to one or more express routes. With each incoming request, a nodule instance propagates throughout the express middleware chain as req.nodule. 
 
-A *__guar nodule__* extends the base nodule behavior to include data gathering, stub-handling and template-rendering. It also allows custom app-defined middleware to be declared between each step of the request/response chain. Guar attaches data returned as the res.guar object, and sends res.guar.renderData to the template or straight back to the client as JSON.
+A *__guar nodule__* extends the base nodule behavior to include REST data gathering and stub-handling. It also allows custom app-defined middleware to be declared between each step of the request/response chain. Guar attaches data returned as the res.locals object, and sends the res.locals.responseData object back to the client as JSON.
 
 *Nodulejs was split off from guar to separate out the core self-discovery and initialization features, which can potentially be a building block for a wide variety of node applications or frameworks.*
 
@@ -67,13 +137,13 @@ A nodule is analogous to a JSP or PHP page in those worlds. Unlike PHP/JSP behav
 ### Motivation 
 From a __feature-development point of view__, we wanted to give developers the flexibility of [component-based architecture](http://en.wikipedia.org/wiki/Component-based_software_engineering) as much as possible, but still keep system-wide control over the middleware chain. On a small site with a small development team the latter might not be an issue. But on a large site with devs scattered all over the globe, some kind of middleware sandbox was a necessity. 
 
-Our feature devs spend 80-90% of their effort in jade templates or on the client side. For them, node components are often mostly a pass-through to our back-end API(s)--with some business logic applied to the request on the way in, and API data on the way out. Ideally they should have to learn as little as possible of the vagaries/plumbing/whatever-your-favorite-metaphor-for-framework-stuff of node. Creating a new node component should be as easy for them as creating a new JSP - but again, without the framework losing control of the middleware chain.
+Our feature devs spend 80-90% of their effort in html-generating templates or on the client side. For them, node components are often mostly a pass-through to our back-end API(s)--with some business logic applied to the request on the way in, and API data on the way out. Ideally they should have to learn as little as possible of the vagaries/plumbing/whatever-your-favorite-metaphor-for-framework-stuff of node. Creating a new node component should be as easy for them as creating a new JSP - but again, without the framework losing control of the middleware chain.
 
 From a __framework-development point of view__, we knew that as requirements evolved, we would constantly need to add default properties to each component, while hopefully causing as little disruption as possible to existing components. This is easily accomplished by adding a default property to the base config, then specifying the property only in the nodules that need the new property.
 
 We also knew we'd need to add slices of business logic globally or semi-globally at any point in the request chain. By keeping control of the middleware chain we are able to do this with ease. 
 
-This diagram might make the concept a little more clear:
+This diagram, which illustrates parallel calls, should make the concept a little more clear:
 
 ![](http://i.imgur.com/eXExJi8.gif)
 
@@ -99,7 +169,7 @@ Guar inherits the 4 core [nodulejs](https://github.com/jackspaniel/nodulejs) def
 Guar also adds the following optional nodule properties:
 
 1. __preProcessor:__ use this function to manipulate query params or other business logic before back-end data-gathering
-2. __postProcessor__: use this function to process data returned from back-end data-gathering, before calling the template or sending the renderData back to the client as JSON
+2. __postProcessor__: use this function to process data returned from back-end data-gathering, before sending the responseData back to the client as JSON
 3. __error:__ set to a string or an Error() instance to get the framework to call next(error)
 4. __apiCalls:__ array of API calls to made in parallel for this nodule, see the section below for details what constitutes an API call. *this property is added to nodule defaults by the rest-api middleware*
 
@@ -134,7 +204,7 @@ An app can create and use 4 optional express middleware functions, which splice 
 2. __preData:__ called after nodule.preProcessor, before data-gathering
 3. __getData:__ middleware which gets all data (Note: if specified in the app config, this function will bypass all middleware behavior)
 4. __postData:__ called after data gathering, before nodule.postProcessor
-5. __finish:__ called after nodule.postProcessor, before res.send() or res.render()
+5. __finish:__ called after nodule.postProcessor, before res.send()
  
 ### Global properties
 
@@ -160,39 +230,166 @@ $ node demoServer
 ## Features for future consideration
 + __API error handling for rest-api middlware.__ It seems that there can be a huge variation in error behavior, and even in what constitutes an API error (status code-based?), from web-app to web-app. So for now I've punted on advanced API error handling, and let the app deal with it in the API callback. But if something like a standard is more or less agreed-upon, I will be happy to add flexible error handling.
 
-## Examples:
+## More Examples:
 
-#### JSON response
-([getData.js](https://github.com/jackspaniel/guar/blob/master/demo/json/getData.js) from the demoApp)
+#### Parallel calls with nested sequential calls
+([getData.js](https://github.com/jackspaniel/guar/blob/master/demo/json/par_seq/par_seq.js) from the demoApp)
 ```js
+// FEATURES DEMONSTRATED:
+
+// parallel API calls with nested sequential calls
+// custom handlers to be called between nested sequential calls
+// setting API query parameters at boot time and run time
+// auto-generated sequential call namespace
+// manually-specified nested sequential call namespace
+// adding nested sequential calls at run time
+// adding a nested sequential call conditionally after receiving a response from the first
+
 module.exports = function(app) {
   return {
-    
-    route : '/json/getData/:id',       
-
+    // routes can be a string, RegExp or array of either (to match multiple routes)
+    route: ['/json/par_seq'],
+  
+    // use JS object for parallel calls, array for sequential
+    // these are set at bootup time
     apiCalls: {
-      {data1: {path: '/api/getdata/'}}, // :id is tacked on by the framework automatically
+      
+      // sequential calls nested in parallel
+      // namespace is auto-generated from parent namespace: cms1, cms2, etc.
+      cms: [
+        {path: '/api/cms/home', handler:'cmsHomeHandler'},
+        {path: '/api/cms/home2'}
+      ], 
+      
+      kitchensink: {path: '/api/getdata/kitchensink', params:{staticParam: 'test1'}}, // adding static param at bootup time
     },
-
+    
+    // called before any API calls are made
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
 
-      this.apiCalls[0].params = {myParam: req.query.myParam};
-   },
+      // demonstrate adding apiCall custom headers at run time
+      this.apiCalls.kitchensink.customHeaders = [{name: 'x-test', value: 'success'}]; 
+      
+      // demonstrate adding api query param at run time
+      this.apiCalls.kitchensink.params.myParam = 'test2';
+
+      // demonstrate adding parallel API call at run time, which is actually two nested sequential calls
+      // also demonstrate custom namespaces (instead of auto-generated based on parent namespace)
+      this.apiCalls.somecalls = [
+        {path: '/api/getdata/somecall/', handler:'someCallsHandler', namespace:'myCustomNamespace'}
+      ];
+    },
     
+    // called after first cms nested sequential call
+    cmsHomeHandler: function(apiResponse, req, res) {
+      this.debug('cmsHomeHandler called');
+
+      // demonstrate using output of 1st cms nested sequential call is input for the second
+      this.apiCalls.cms[1].params = {userIdFromFirstCall: apiResponse.userId};
+    },
+
+    // called after first somecalls nested sequential call
+    someCallsHandler: function(apiResponse, req, res) {
+      this.debug('someCallsHandler called');
+
+      // demonstrate adding second nested sequential call after response from first call (could be added conditionally)
+      this.apiCalls.somecalls.push({path: '/api/getdata/someothercall/', namespace:'rufus'});
+    },
+    
+    // called after all API calls return
     postProcessor: function(req, res) {
       this.debug('postProcessor called');
 
-       res.guar.renderData = {
-         systemMsg: res.guar.data1.systemMsg,
-         data: res.guar.data1
+      // object sent back to browser
+      res.locals.responseData = {
+        cms1: res.locals.cms1,
+        cms2: res.locals.cms2,
+        kitchensink: res.locals.kitchensink,
+        myCustomNamespace: res.locals.myCustomNamespace,
+        rufus: res.locals.rufus,
       };
     }
   };
 };
 ```
 
-#### Form submit
+#### Sequential calls with nested parallel calls
+([seq_par.js](https://github.com/jackspaniel/guar/blob/master/demo/json/seq_par/seq_par.js) from the demoApp)
+```js
+// FEATURES DEMONSTRATED:
+
+// sequential with nested parallel calls 
+// custom handler defined as sibling of parallelCalls array
+// manipulating data on both nested parallel calls when done, but before second call in the sequence is executed
+// using the output of the first nested sequential call as input for the second
+// adding another sequential call at run time (could be conditional based on previous results)
+
+module.exports = function(app) {
+  return {
+    // routes can be a string, RegExp or array of either (to match multiple routes)
+    route: ['/json/seq_par'],
+  
+    // example of embedding parallel calls as step 1 of a sequential array
+    apiCalls: [
+      { 
+        handler: 'cmsHandler', 
+        parallelCalls: {
+          cms1: {path: '/api/cms/home'},
+          cms2: {path: '/api/cms/home2'}
+        }
+      },
+      {path: '/api/getdata/kitchensink', handler: 'kitchenSinkHandler'},
+    ],
+  
+    // called before any API calls are made
+    preProcessor: function(req, res) {
+      this.debug('preProcessor called');
+
+      // demonstrate adding custom headers to one call at run time
+      this.apiCalls[1].customHeaders = [{name: 'x-test', value: 'success'}]; 
+    },
+
+    // handler called after 1st call in sequence (which is actually two parallel calls)
+    cmsHandler: function(apiResponse, req, res) {
+      this.debug('cmsHandler!!!');
+
+      // demonstrate manipulating call response data
+      apiResponse.cms1.showHandler = 'this should be in the first parallel call';
+      apiResponse.cms2.showHandler = 'this should be in the second parallel call';
+
+      // demonstrate input to second call from output of first call
+      this.apiCalls[1].params = {userId: apiResponse.cms2.userId};
+    },
+    
+    // handler called after 2nd sequential call
+    kitchenSinkHandler: function(apiResponse, req, res) {
+      this.debug('kitchenSinkHandler!!!');
+
+      apiResponse.testSequential2 = 'yyyy';
+
+      // demonstrate pushing another sequential call onto the stack at run time
+      this.apiCalls.push({path: '/api/getdata/somecall', params: {userId2: 'zzzzz'}});
+    },
+    
+    // called after all API calls return
+    postProcessor: function(req, res) {
+      this.debug('postProcessor called');
+
+      // return data from all calls - this will change to res.locals.data1, etc.
+      res.locals.responseData = {
+        cms1: res.locals.cms1,
+        cms2: res.locals.cms2,
+        data1: res.locals.data1,
+        data2: res.locals.data2,
+        data3: res.locals.data3,
+      };
+    }
+  };
+};
+```
+
+#### Form submit with URL enconoded option
 ([submitForm.js](https://github.com/jackspaniel/guar/blob/master/demo/json/submitForm.js) from the demoApp)
 ```js
 var _ = require('lodash');
@@ -225,8 +422,8 @@ module.exports = function(app) {
     postProcessor: function(req, res) {
       this.debug('postProcessor called');
 
-      res.guar.renderData = {
-        response: res.guar.data1
+      res.locals.responseData = {
+        response: res.locals.data1
       };
     }
   };
@@ -238,12 +435,6 @@ module.exports = function(app) {
 ```js
 function demoStart(req, res, next) {
   debug("demoStart called");
-
-  res.locals.pretty = true; // jade pretty setting - turn off at the component level if necessary
-
-  // example of setting nodule property globally
-  if (req.nodule.contentType !== 'html' && req.path.indexOf('/json/') === 0)
-    req.nodule.contentType = 'json'; 
 
   // example of app-level logic - simple device detection (used throughout demoApp)
   if (req.headers['user-agent'].match(/android/i))
@@ -274,18 +465,18 @@ function demoApiCallback(callArgs, req, res, next) {
     debug(msg); 
     
     // example of app-level logic on every api response (remember there can be multiple API calls per request)
-    res.guar[callArgs.namespace].systemMsg = msg;
+    res.locals[callArgs.namespace].systemMsg = msg;
 
     // used by kitchen sink to test if API custom headers are being set
     if (callArgs.apiResponse.req._headers)
-      res.guar[callArgs.namespace].customHeaders = callArgs.apiResponse.req._headers;  
+      res.locals[callArgs.namespace].customHeaders = callArgs.apiResponse.req._headers;  
 
     next();
   }
 }
 ```
 
-For more examples see the [Kitchen Sink](https://github.com/jackspaniel/guar/blob/master/demo/kitchenSink/kitchenSink.js) and the rest of the [Demo App](https://github.com/jackspaniel/guar/blob/master/demo/)
+For more examples see the rest of the [Demo App](https://github.com/jackspaniel/guar/blob/master/demo/)
 
 ## License
 ### MIT

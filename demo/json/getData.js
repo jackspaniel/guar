@@ -4,7 +4,7 @@
 // "magic" adding :id route wildcard to API path ending in / (common REST paradigm)
 // adding API params at request time
 // pre and post API business logic
-// creting res.guar.renderData object which is sent to client as JSON response
+// creting res.locals.responseData object which is sent to client as JSON response
 
 // for more demonstration of guar features - see kitchenSink.js, homePage.js, getSpecifcData.js, 404.js, submitForm.js
 
@@ -29,12 +29,12 @@ module.exports = function(app) {
     postProcessor: function(req, res) {
       this.debug('postProcessor called');
 
-      // business logic after all API calls return, before sending res.guar.renderData to client in res.send()
+      // business logic after all API calls return, before sending res.locals.responseData to client in res.send()
 
       // sent as JSON to client
-      res.guar.renderData = {
-        systemMsg: res.guar.data1.systemMsg,
-        msg: res.guar.data1.msg
+      res.locals.responseData = {
+        systemMsg: res.locals.data1.systemMsg,
+        msg: res.locals.data1.msg
       };
     }
   };
