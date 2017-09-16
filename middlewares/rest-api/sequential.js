@@ -24,12 +24,22 @@ module.exports = function(app, config) {
       let apiCall = apiCalls[callIndex-1];
       apiCall.namespace = apiCall.namespace || 'data' + (callIndex);
 
-      api.getData(apiCall, req, res, (err) => {
-        if (err) 
-          next(err); // send into express error flow
-        else 
-          sequentialApis(apiCalls, req, res, next, callIndex+1);
-      });
+      if (apiCall.parallelCalls) {
+        app.locals.parallel(apiCall.parallelCalls, req, res, (err) => {
+          if (err) 
+            next(err); // send into express error flow
+          else 
+            sequentialApis(apiCalls, req, res, next, callIndex+1);
+        }, apiCall.handler);
+      }
+      else {
+        api.getData(apiCall, req, res, (err) => {
+          if (err) 
+            next(err); // send into express error flow
+          else 
+            sequentialApis(apiCalls, req, res, next, callIndex+1);
+        });
+      }
     }
     else { 
       debug('sequential APIs done!!');
