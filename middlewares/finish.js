@@ -5,9 +5,6 @@ module.exports = function(app, config) {
   return function(req, res, next) {
     config.customDebug('guar->finish')('called');
 
-    if (req.nodule.contentType === 'json')
-      res.json(res.guar.renderData);
-    else
-      res.render(res.templatePath, res.guar.renderData);
+    res.json(res.locals.responseData);
   };
 };

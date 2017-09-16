@@ -32,9 +32,9 @@ module.exports = function(app) {
     postProcessor: function(req, res) {
       this.debug('postProcessor called');
 
-      res.guar.renderData = {
-        systemMsg: res.guar.data1.systemMsg,
-        msg: res.guar.data1.msg
+      res.locals.responseData = {
+        systemMsg: res.locals.data1.systemMsg,
+        msg: res.locals.data1.msg
       };
     }
   };

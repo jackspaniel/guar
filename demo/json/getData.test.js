@@ -1,7 +1,7 @@
 // FEATURES TESTED:
 
 // setting global rule by app-defined middleware (anything in /json folder gets contentType = 'json')
-// setting global property (systemMsg) on res.guar.renderData via middleware
+// setting global property (systemMsg) on res.locals.responseData via middleware
 
 var expect  = require('expect');
 var request = require('supertest');

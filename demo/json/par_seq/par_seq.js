@@ -2,6 +2,7 @@
 
 // parallel API calls with nested sequential calls
 // custom handlers to be called between nested sequential calls
+// setting API query parameters at boot time and run time
 // auto-generated sequential call namespace
 // manually-specified nested sequential call namespace
 // adding nested sequential calls at run time
@@ -64,12 +65,12 @@ module.exports = function(app) {
       this.debug('postProcessor called');
 
       // object sent back to browser
-      res.guar.renderData = {
-        cms1: res.guar.cms1,
-        cms2: res.guar.cms2,
-        kitchensink: res.guar.kitchensink,
-        myCustomNamespace: res.guar.myCustomNamespace,
-        rufus: res.guar.rufus,
+      res.locals.responseData = {
+        cms1: res.locals.cms1,
+        cms2: res.locals.cms2,
+        kitchensink: res.locals.kitchensink,
+        myCustomNamespace: res.locals.myCustomNamespace,
+        rufus: res.locals.rufus,
       };
     }
   };

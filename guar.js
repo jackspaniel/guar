@@ -1,18 +1,18 @@
 // add guar default config to nodulejs default config
 
-var _ = require('lodash');
-var nodulejs = require('nodulejs');
+const _ = require('lodash');
+const nodulejs = require('nodulejs');
 const restMiddleware = require('./middlewares/rest-api');
 
 module.exports = function(app, config) {
 
-  var guarConfig = _.merge({}, defaultConfig, config);
+  const guarConfig = _.merge({}, defaultConfig, config);
   guarConfig.customDebug = guarConfig.customDebug || customDebug;
 
-  var debug = guarConfig.customDebug('guar->index');
+  const debug = guarConfig.customDebug('guar->index');
   debug('initializing');
 
-  var getDataMiddleware = config.middlewares.getData || restMiddleware(app, guarConfig);
+  const getDataMiddleware = config.middlewares.getData || restMiddleware(app, guarConfig);
 
   // array of middleware functions to be executed on each request
   // splicing app-defined middleware in-between guar system middlware
@@ -84,29 +84,19 @@ const defaultConfig =  {
     //             - to be executed on each request, defined above module init
 
     // NOTE: the params below call be mutated in the preProcessor using this.myParam notation
-    //       they can also be mutated in the postProcessor if the API calls are not dependent on them (IE - templateName)
-
-    // MAGIC ALERT: if template name is null, the framework looks for [nodule name].templateExt 
-    //              first in the nodule folder, then in the shared template folder
-    templateName: null,
-
-    // the framework looks for templates with the template name + this extension
-    templateExt: '.jade',
-
-    // 'html', 'json' only current values - use this to force any nodule to behave like a json or html call regardless of naming conventions or directory conventions
-    contentType: null,
-
+    //       they can also be mutated in the postProcessor if the API calls are not dependent on them
+    
     // used by REST middlware
     apiCalls: {},
 
     // use to manipulate query params or other business logic before api call(s)
     preProcessor: function(req, res) { },
 
-    // use to process data returned from the API before calling template or sending back to client as JSON
+    // use to process data returned from the API before sending back to client as JSON
     postProcessor: function(req, res) { },
-    // NOTE: one important property you usually need to set in the postProcessor is res.guar.renderData 
-    //       this is the data sent to the jade template or back to the client as JSON
-    // MAGIC ALERT: if you don't specify res.guar.renderData the framework sets res.guar.renderData = res.guar.data1
+    // NOTE: one important property you usually need to set in the postProcessor is res.locals.responseData 
+    //       this is the data sent back to the client as JSON
+    // MAGIC ALERT: if you don't specify res.locals.responseData the framework sets res.locals.responseData = res.locals.data1
 
     // set this.error to an Error() instance to call next(error) inside the preProcessor or postProcessor
     error: null,

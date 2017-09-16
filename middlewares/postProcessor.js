@@ -1,15 +1,13 @@
 // wraps nodule.postProcessor, called after API calls return
 
-var path = require('path');
-
 // wraps nodule.postProcessor, called after all API calls return
 module.exports = function(app, config) {
-  var debug = config.customDebug('guar->postData');
+  const debug = config.customDebug('guar->postData');
 
   return function(req, res, next) {
     debug("called");
 
-    var nodule = req.nodule;
+    const nodule = req.nodule;
     // execute nodule-level post API business logic
     nodule.postProcessor(req, res);
 
@@ -19,18 +17,9 @@ module.exports = function(app, config) {
       return;
     }
 
-    // convenience method so devs don't have to set renderData for default single API case
-    if (!res.guar.renderData)
-      res.guar.renderData = res.guar.data1 || {};
-
-    if (req.nodule.contentType !== 'json') {
-      // if template name is not specified assume (nodule name).(nodule extention)
-      var templateName = (nodule.templateName) ? nodule.templateName : nodule.name + nodule.templateExt;
-      res.templatePath =  (templateName.indexOf('/') > -1) 
-                          ? path.join(process.cwd(), templateName) 
-                          : path.join(nodule.path, templateName);
-    }
-    debug('res.templatePath = ' + res.templatePath);
+    // convenience method so devs don't have to set responseData for default single API case
+    if (!res.locals.responseData)
+      res.locals.responseData = res.locals.data1 || {};
 
     next();
   };

@@ -1,8 +1,7 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
-var demoApp = require('./demo/demoApp');
-var altDemoApp = require('./demo/altDemoApp');
+const express = require('express');
+const app = express();
+const demoApp = require('./demo/demoApp');
+const altDemoApp = require('./demo/altDemoApp');
 
 app.set('view engine', 'jade');
 app.set('view options', { layout: false });

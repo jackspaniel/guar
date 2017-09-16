@@ -39,7 +39,7 @@ module.exports = function(app, config) {
   function parallelApis(apiCalls, req, res, next, handler) {
     debug('parallelApis started!! # calls:' + apiCalls.length);
 
-    var resultCount = 1;
+    let resultCount = 1;
     apiCalls.forEach(function(apiCall){
 
       if (Array.isArray(apiCall)) {
@@ -69,7 +69,8 @@ module.exports = function(app, config) {
       
       let results = {};
       apiCalls.forEach(apiCall => {
-        results[apiCall.namespace] = res.guar[apiCall.namespace]; 
+        console.log(res);
+        results[apiCall.namespace] = res.locals[apiCall.namespace]; 
       });
 
       req.nodule[handler](results, req, res);
