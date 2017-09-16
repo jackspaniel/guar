@@ -39,6 +39,7 @@ module.exports = function(app) {
 ```
 
 A  more complicated guar component, which makes three **sequential** API calls, some decided at run-time, using the rest-api middleware, looks like this (see **MORE EXAMPLES** at the bottom for handling a mix of nested sequential and parallel calls):
+([seq.js](https://github.com/jackspaniel/guar/blob/master/demo/json/seq/seq.js) from the demoApp)
 ```js
 // FEATURES DEMONSTRATED:
 
@@ -233,7 +234,7 @@ $ node demoServer
 ## More Examples:
 
 #### Parallel calls with nested sequential calls
-([getData.js](https://github.com/jackspaniel/guar/blob/master/demo/json/par_seq/par_seq.js) from the demoApp)
+([par_seq.js](https://github.com/jackspaniel/guar/blob/master/demo/json/par_seq/par_seq.js) from the demoApp)
 ```js
 // FEATURES DEMONSTRATED:
 
