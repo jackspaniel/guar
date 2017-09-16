@@ -285,12 +285,12 @@ function demoApiCallback(callArgs, req, res, next) {
 }
 ```
 
-For more examples see the [Demo App](https://github.com/jackspaniel/guar/blob/master/demo/)
+For more examples see the [Kitchen Sink](https://github.com/jackspaniel/guar/blob/master/demo/kitchenSink/kitchenSink.js) and the rest of the [Demo App](https://github.com/jackspaniel/guar/blob/master/demo/)
 
 ## License
 ### MIT
 
-npm-image]: https://img.shields.io/npm/v/guar.svg?style=flat
+[npm-image]: https://img.shields.io/npm/v/guar.svg?style=flat
 [npm-url]: https://www.npmjs.com/package/guar
 [downloads-image]: https://img.shields.io/npm/dm/guar.svg?style=flat-square
 [downloads-url]: https://npmjs.org/package/guar
