@@ -2,14 +2,14 @@
 
 module.exports = function(app) {
   return {
-    route : '/api/cms/home',
+    route : '/api/cms/home2',
 
     middlewares: [
       function(req, res, next) {
         req.nodule.debug('home page API called');
         res.send({
-          msg: 'home page CMS API success!', 
-          userId: '123456', 
+          msg: 'home page CMS 2 API success!', 
+          userId: '987654', 
           myParam:req.query.myParam,
           queryPrams: req.query
         });
