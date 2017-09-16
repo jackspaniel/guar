@@ -12,19 +12,17 @@
 
 guar is a component-based, datasource-agnostic framework for serving web content. It extends the [nodulejs component framework](https://github.com/jackspaniel/nodulejs) - to include back-end data gathering, standardized slots for app-defined middleware and template management. 
 
-A really simple guar component (using the rest-api middleware) looks like this:
+A really simple guar component. which makes two parallel API calls using the rest-api middleware, looks like this:
 ```js
 module.exports = function(app) {
   return {
   
     route: '/home', 
     
-    templateName: 'homePage.jade',
-
-    apiCalls: [
-      {path: '/api/cms/home'},
-      {path: '/api/data/homedata'}
-    ],
+    apiCalls: {
+      {cms: {path: '/api/cms/home'}},
+      {data: {path: '/api/data/homedata'}}
+    },
     
     preProcessor: function(req, res) {
       // pre-API(s) business logic goes here
@@ -100,13 +98,10 @@ Guar inherits the 4 core [nodulejs](https://github.com/jackspaniel/nodulejs) def
 
 Guar also adds the following optional nodule properties:
 
-1. __templateName:__ MAGIC ALERT: if null the framework looks for a template in the same folder and of the same name as the nodule filename + templateExt. So if you have myPage.jade in the same folder as myPage.js, there is no need to specify template name.
-2. __templateExt:__ default template extension
-3. __contentType:__ 'html' and 'json' are the only current values
-4. __preProcessor:__ use this function to manipulate query params or other business logic before back-end data-gathering
-5. __postProcessor__: use this function to process data returned from back-end data-gathering, before calling the template or sending the renderData back to the client as JSON
-6. __error:__ set to a string or an Error() instance to get the framework to call next(error)
-7. __apiCalls:__ array of API calls to made in parallel for this nodule, see the section below for details what constitutes an API call. *this property is added to nodule defaults by the rest-api middleware*
+1. __preProcessor:__ use this function to manipulate query params or other business logic before back-end data-gathering
+2. __postProcessor__: use this function to process data returned from back-end data-gathering, before calling the template or sending the renderData back to the client as JSON
+3. __error:__ set to a string or an Error() instance to get the framework to call next(error)
+4. __apiCalls:__ array of API calls to made in parallel for this nodule, see the section below for details what constitutes an API call. *this property is added to nodule defaults by the rest-api middleware*
 
 <br>NOTE: global or semi-global calls like getProfile, getGlobalNav, etc. can be added to this array in the preData middleware.
 
@@ -167,46 +162,6 @@ $ node demoServer
 
 ## Examples:
 
-#### HTML response
-([homePage.js](https://github.com/jackspaniel/guar/blob/master/demo/homePage/homePage.js) from the demoApp)
-```js
-module.exports = function(app) {
-  return {
-  
-    route: ['/', '/home', '/special'], // multiple routes
-
-    apiCalls: [
-      {path: '/api/cms/home'},
-      {path: '/api/data/homeslices'}
-    ],
-    
-    // pre-API(s) business logic
-    preProcessor: function(req, res) {
-      this.debug('preProcessor called');
-
-      if (req.path.indexOf('special') > -1) {
-        this.apiCalls[1].params = {isSpecial: true}; // setting api params at request-time
-        this.templateName = 'altHomePage.jade'; // using alternate template
-      }
-    },
-    
-    // post-API(s) business logic
-    postProcessor: function(req, res) {
-      this.debug('postProcessor called');
-
-      var clientMsg = res.guar.data2.specialMsg || res.guar.data2.msg;
-
-      res.guar.renderData = {
-        globalNav: res.guar.globalNav,
-        cmsData: res.guar.data1,
-        myData: res.guar.data2,
-        clientMsg: clientMsg
-      };
-    }
-  };
-};
-```
-
 #### JSON response
 ([getData.js](https://github.com/jackspaniel/guar/blob/master/demo/json/getData.js) from the demoApp)
 ```js
@@ -215,9 +170,9 @@ module.exports = function(app) {
     
     route : '/json/getData/:id',       
 
-    apiCalls: [
-      {path: '/api/getdata/'}, // :id is tacked on by the framework automatically
-    ],
+    apiCalls: {
+      {data1: {path: '/api/getdata/'}}, // :id is tacked on by the framework automatically
+    },
 
     preProcessor: function(req, res) {
       this.debug('preProcessor called');
@@ -330,12 +285,12 @@ function demoApiCallback(callArgs, req, res, next) {
 }
 ```
 
-For more examples see the [Kitchen Sink](https://github.com/jackspaniel/guar/blob/master/demo/kitchenSink/kitchenSink.js) and the rest of the [Demo App](https://github.com/jackspaniel/guar/blob/master/demo/)
+For more examples see the [Demo App](https://github.com/jackspaniel/guar/blob/master/demo/)
 
 ## License
 ### MIT
 
-[npm-image]: https://img.shields.io/npm/v/guar.svg?style=flat
+npm-image]: https://img.shields.io/npm/v/guar.svg?style=flat
 [npm-url]: https://www.npmjs.com/package/guar
 [downloads-image]: https://img.shields.io/npm/dm/guar.svg?style=flat-square
 [downloads-url]: https://npmjs.org/package/guar
