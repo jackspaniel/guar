@@ -1,6 +1,6 @@
 {
   "name": "guar",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "API orchestration layer - with parallel, sequential and conditional call support",
   "main": "guar.js",
   "keywords": [
