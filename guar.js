@@ -18,19 +18,19 @@ module.exports = function(app, config) {
   // splicing app-defined middleware in-between guar system middlware
   guarConfig.noduleDefaults.middlewares = [
     
-    guarConfig.middlewares.start, // app-defined
+    guarConfig.middlewares.start || passThrough, // app-defined
     
     require('./middlewares/preProcessor')(app, guarConfig), // preprocessing logic before APIs are called
 
-    guarConfig.middlewares.preData, // app-defined
+    guarConfig.middlewares.preData || passThrough, // app-defined
     
     getDataMiddleware, // can be app-defined or use guar rest api middleware by default
     
-    guarConfig.middlewares.postData, // app-defined
+    guarConfig.middlewares.postData || passThrough, // app-defined
 
     require('./middlewares/postProcessor')(app, guarConfig), // common post-processing logic after all APIs return
 
-    guarConfig.middlewares.finish, // app-defined
+    guarConfig.middlewares.finish || passThrough, // app-defined
     
     require('./middlewares/finish')(app, guarConfig), // finish with json or html
   ];
